@@ -1,0 +1,272 @@
+{% extends "dashboard/base_site.html" %}
+
+{% block title %} Dashboard {% endblock title %}
+
+{% block content %}
+<div class="right_col" role="main">
+ <!-- FILTRO-->
+  <div class="row" style="margin-bottom:20px;">
+  <div class="col-md-12">
+    <form method="GET" class="form-inline">
+
+      <div class="form-group">
+        <label>Desde:</label>
+        <input 
+          type="date" 
+          name="start_date" 
+          class="form-control"
+          value="{{ request.GET.start_date }}">
+      </div>
+
+      <div class="form-group" style="margin-left:10px;">
+        <label>Hasta:</label>
+        <input 
+          type="date" 
+          name="end_date" 
+          class="form-control"
+          value="{{ request.GET.end_date }}">
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="margin-left:10px;">
+        Filtrar
+      </button>
+
+      <a href="{% url 'dashboard_home' %}" class="btn btn-default" style="margin-left:10px;">
+        Limpiar
+      </a>
+
+    </form>
+
+     <!--  BOTONES RÁPIDOS (AQUÍ VAN) -->
+    <div style="margin-top:10px;">
+      <a href="?start_date={{ today|date:'Y-m-d' }}&end_date={{ today|date:'Y-m-d' }}" class="btn btn-sm btn-info">Hoy</a>
+      <a href="?start_date={{ last_7_days|date:'Y-m-d' }}&end_date={{ today|date:'Y-m-d' }}" class="btn btn-sm btn-info">7 días</a>
+    </div>
+  </div>
+</div>
+<!-- Detalles de la fecha de filtro -->
+{% if request.GET.start_date and request.GET.end_date %}
+  <p style="margin-top:10px;">
+    Mostrando datos desde 
+    <strong>{{ request.GET.start_date }}</strong> 
+    hasta 
+    <strong>{{ request.GET.end_date }}</strong>
+  </p>
+{% endif %}
+
+  <!-- 🔹 KPIs -->
+  <div class="row tile_count">
+
+    <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
+      <span class="count_top">Clientes</span>
+      <div class="count">{{ total_customers }}</div>
+    </div>
+
+    <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
+      <span class="count_top">Ventas</span>
+      <div class="count">{{ total_sales }}</div>
+    </div>
+
+    <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
+      <span class="count_top">Ingresos</span>
+      <div class="count green">${{ total_revenue|floatformat:2 }}</div>
+    </div>
+
+    <div class="col-md-3 col-sm-4 col-xs-6 tile_stats_count">
+      <span class="count_top">Ticket promedio</span>
+      <div class="count">${{ avg_ticket|floatformat:2}}</div>
+    </div>
+
+  </div>
+
+  <!-- 🔹 GRÁFICO -->
+ <div class="row">
+
+  <!-- Línea -->
+  <div class="col-md-8">
+    <div class="x_panel">
+      <div class="x_title">
+        <h2>Ventas por día</h2>
+      </div>
+      <div class="x_content">
+        <canvas id="salesChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Barras -->
+  <div class="col-md-4">
+  <div class="x_panel">
+    <div class="x_title">
+      <h2>Top productos</h2>
+    </div>
+    <div class="x_content">
+      <canvas id="barChart"></canvas>
+    </div>
+  </div>
+</div>
+
+<div class="row">
+
+  <div class="col-md-6">
+    <div class="x_panel">
+      <div class="x_title">
+        <h2>Ventas por categoría</h2>
+      </div>
+      <div class="x_content">
+        <canvas id="pieChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-6">
+    <div class="x_panel">
+      <div class="x_title">
+        <h2>Resumen</h2>
+      </div>
+      <div class="x_content">
+        <p>Total productos vendidos: <strong>{{ total_products_sold }}</strong></p>
+        <p>Ventas hoy: <strong>{{ today_sales }}</strong></p>
+        <p>Nuevos clientes (7 días): <strong>{{ new_customers }}</strong></p>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</div>
+
+</div>
+
+<!-- 🔹 DATA DESDE DJANGO -->
+<script>
+  const salesLabels = {{ sales_labels|safe }};
+  const salesData = {{ sales_data|safe }};
+
+  console.log('aqui ' + salesLabels);
+  console.log('AQUI ' + salesData);
+</script>
+
+<!-- 🔹 CHART -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  // 🔹 VALIDACIÓN SEGURA (evita romper JS)
+  const salesLabels = {{ sales_labels|default:"[]"|safe }};
+  const salesData = {{ sales_data|default:"[]"|safe }};
+
+  const barLabels = {{ bar_labels|default:"[]"|safe }};
+  const barData = {{ bar_data|default:"[]"|safe }};
+
+  const pieLabels = {{ pie_labels|default:"[]"|safe }};
+  const pieData = {{ pie_data|default:"[]"|safe }};
+
+  // ===============================
+  // 🔹 GRÁFICO LINEAL (VENTAS)
+  // ===============================
+  const salesCanvas = document.getElementById('salesChart');
+
+  if (salesCanvas && salesLabels.length) {
+    new Chart(salesCanvas, {
+      type: 'line',
+      data: {
+        labels: salesLabels,
+        datasets: [{
+          label: 'Ventas',
+          data: salesData,
+          borderWidth: 2,
+          tension: 0.4,
+          fill: true,
+          backgroundColor: 'rgba(52, 152, 219, 0.2)',
+          borderColor: '#3498DB'
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // ===============================
+  // 🔹 GRÁFICO DE BARRAS
+  // ===============================
+  const barCanvas = document.getElementById('barChart');
+
+  if (barCanvas && barLabels.length) {
+    new Chart(barCanvas, {
+      type: 'bar',
+      data: {
+        labels: barLabels,
+        datasets: [{
+          label: 'Productos vendidos',
+          data: barData,
+          borderWidth: 1,
+          borderRadius: 8,
+          barThickness: 18,
+          backgroundColor: '#1ABC9C'
+        }]
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        plugins: {
+          legend: { display: false }
+        },
+        scales: {
+          x: { beginAtZero: true }
+        }
+      }
+    });
+  }
+
+  // ===============================
+  // 🔹 GRÁFICO PIE
+  // ===============================
+  const pieCanvas = document.getElementById('pieChart');
+
+  if (pieCanvas && pieLabels.length) {
+    new Chart(pieCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: pieLabels,
+        datasets: [{
+          data: pieData,
+          backgroundColor: [
+            '#1ABC9C',
+            '#3498DB',
+            '#9B59B6',
+            '#E74C3C',
+            '#F1C40F',
+            '#34495E'
+          ],
+          borderWidth: 0
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    });
+  }
+
+});
+</script>
+
+{% endblock content %}
+
+{% block javascripts %}
+  {{ block.super }}
+  
+  <!-- SOLO ESTO -->
+  
+
+{% endblock javascripts %}

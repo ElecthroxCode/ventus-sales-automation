@@ -1,0 +1,119 @@
+{% extends "dashboard/base_site.html" %}
+
+{% block content %}
+<div class="right_col">
+
+  <h2>Detalle de Venta</h2>
+
+  <!-- 🔹 INFO GENERAL -->
+  <div class="x_panel">
+    <div class="x_title">
+      <h2>Información</h2>
+    </div>
+
+    <div class="x_content">
+
+      <p><strong>ID:</strong> <span id="saleId"></span></p>
+      <p><strong>Cliente:</strong> <span id="customer"></span></p>
+      <p><strong>Fecha:</strong> <span id="date"></span></p>
+      <p><strong>Método de pago:</strong> <span id="payment"></span></p>
+      <p><strong>Total:</strong> $<span id="total"></span></p>
+
+    </div>
+  </div>
+
+  <!-- 🔹 DETALLE PRODUCTOS -->
+  <div class="x_panel">
+    <div class="x_title">
+      <h2>Productos</h2>
+    </div>
+
+    <div class="x_content">
+
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Subtotal</th>
+          </tr>
+        </thead>
+
+        <tbody id="detailsTable"></tbody>
+
+      </table>
+
+    </div>
+  </div>
+
+  <!-- 🔹 BOTÓN VOLVER -->
+  <button onclick="goBack()" class="btn btn-secondary">
+    ← Volver
+  </button>
+
+</div>
+
+<script>
+
+// 🔹 Obtener ID desde URL
+function getSaleIdFromUrl() {
+  const path = window.location.pathname;
+  const parts = path.split('/');
+  return parts[parts.length - 2]; // /sales/ID/
+}
+
+// 🔹 Cargar detalle
+function loadSaleDetail() {
+
+  const saleId = getSaleIdFromUrl();
+
+  fetch(`/api/sales/${saleId}/`)
+    .then(res => res.json())
+    .then(data => {
+
+      // 🔹 Info general
+      document.getElementById('saleId').innerText = data.id;
+      document.getElementById('customer').innerText = data.customer_name;
+      document.getElementById('date').innerText = data.date;
+      document.getElementById('payment').innerText = data.payment_method;
+      document.getElementById('total').innerText = data.total;
+
+      // 🔹 Tabla productos
+      const tbody = document.getElementById('detailsTable');
+      tbody.innerHTML = '';
+
+      data.details.forEach(item => {
+
+        tbody.innerHTML += `
+          <tr>
+            <td>${item.product_name}</td>
+            <td>${item.quantity}</td>
+            <td>$${item.unit_price}</td>
+            <td>$${item.subtotal}</td>
+          </tr>
+        `;
+
+      });
+
+    })
+    .catch(err => {
+      console.error(err);
+      alert("Error cargando detalle");
+    });
+
+}
+
+// 🔹 Volver
+function goBack() {
+  window.location.href = "/dashboard/sales/";
+}
+
+// 🔹 Init
+window.onload = function() {
+  loadSaleDetail();
+};
+
+</script>
+
+{% endblock %}

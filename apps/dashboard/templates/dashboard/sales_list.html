@@ -1,0 +1,138 @@
+{% extends "dashboard/base_site.html" %}
+
+{% block content %}
+<div class="right_col">
+
+  <h2>Listado de Ventas</h2>
+
+  <div class="x_panel">
+    <div class="x_title">
+      <h2>Filtros</h2>
+    </div>
+
+    <div class="x_content">
+
+      <div class="row">
+
+        <div class="col-md-3">
+          <label>Cliente (Nombre o NIT)</label>
+          <input type="text" id="filterCustomer" class="form-control">
+        </div>
+
+        <div class="col-md-3">
+          <label>Método de pago</label>
+          <select id="filterPayment" class="form-control">
+            <option value="">Todos</option>
+          </select>
+        </div>
+
+        <div class="col-md-3">
+          <label>Fecha inicio</label>
+          <input type="date" id="startDate" class="form-control">
+        </div>
+
+        <div class="col-md-3">
+          <label>Fecha fin</label>
+          <input type="date" id="endDate" class="form-control">
+        </div>
+
+      </div>
+
+      <br>
+
+      <button onclick="loadSales()" class="btn btn-primary">Filtrar</button>
+
+    </div>
+  </div>
+
+  <div class="x_panel">
+    <div class="x_content">
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Total</th>
+            <th>Método</th>
+            <th>Fecha</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="salesTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+function loadSales() {
+
+  const search = document.getElementById('filterCustomer').value;
+  const payment = document.getElementById('filterPayment').value;
+  const startDate = document.getElementById('startDate').value;
+  const endDate = document.getElementById('endDate').value;
+
+  let url = '/api/sales/?';
+
+  if (search) url += `search=${search}&`;
+  if (payment) url += `payment_method=${payment}&`;
+  if (startDate && endDate) {
+    url += `start_date=${startDate}&end_date=${endDate}&`;
+  }
+
+  fetch(url)
+    .then(res => res.json())
+    .then(renderSales);
+}
+
+function renderSales(sales) {
+
+  const tbody = document.getElementById('salesTable');
+  tbody.innerHTML = '';
+
+  if (!sales.length) {
+    tbody.innerHTML = `<tr><td colspan="6">Sin resultados</td></tr>`;
+    return;
+  }
+
+  sales.forEach(sale => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${sale.id}</td>
+        <td>${sale.customer_name}</td>
+        <td>$${sale.total}</td>
+        <td>${sale.payment_method}</td>
+        <td>${new Date(sale.date).toLocaleDateString()}</td>
+        <td>
+          <button onclick="viewSale(${sale.id})" class="btn btn-info btn-sm">Ver</button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+function viewSale(id) {
+  window.location.href = `/dashboard/sales/${id}/`;
+}
+
+function loadPaymentMethods() {
+  fetch('/api/sales/payment-methods/')
+    .then(res => res.json())
+    .then(data => {
+      const select = document.getElementById('filterPayment');
+      data.forEach(m => {
+        select.innerHTML += `<option value="${m.value}">${m.label}</option>`;
+      });
+    });
+}
+
+window.onload = function() {
+  loadSales();
+  loadPaymentMethods();
+};
+
+</script>
+
+{% endblock %}

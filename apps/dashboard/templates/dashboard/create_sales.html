@@ -1,0 +1,323 @@
+{% extends "dashboard/base_site.html" %}
+
+{% block content %}
+<div class="right_col">
+
+  <h2>Nueva Venta</h2>
+
+  <!-- 🔹 CLIENTE -->
+  <div class="x_panel">
+    <div class="x_title">
+      <h2>Cliente</h2>
+    </div>
+
+    <div class="x_content">
+
+      <!-- 🔍 BUSCAR -->
+      <input type="text" id="customerNit" placeholder="Ingresar NIT o Cédula" class="form-control">
+
+      <!-- 🔥 MENSAJE BIEN UBICADO -->
+      <div id="customerStatus" style="margin-top:8px; font-weight:bold;"></div>
+
+      <!-- BOTÓN CREAR -->
+      <button onclick="showCreateForm()" class="btn btn-warning" style="margin-top:10px;">
+        Crear cliente
+      </button>
+
+      <hr>
+
+      <!-- SELECT -->
+      <select id="customer" class="form-control">
+        <option value="">-- Seleccionar cliente --</option>
+        {% for customer in customers %}
+        <option value="{{ customer.id }}">
+          {{ customer.name }} {{ customer.lastname }} - {{ customer.nit }}
+        </option>
+        {% endfor %}
+      </select>
+
+      <!-- FORM NUEVO -->
+      <div id="newCustomerForm" style="display:none; margin-top:10px;">
+        <input type="text" id="newCustomerNit" placeholder="NIT" class="form-control">
+        <input type="text" id="newCustomerName" placeholder="Nombre" class="form-control">
+        <input type="text" id="newCustomerLastname" placeholder="Apellido" class="form-control">
+        <input type="email" id="newCustomerEmail" placeholder="Email" class="form-control">
+        <input type="text" id="newCustomerPhone" placeholder="Teléfono" class="form-control">
+
+        <button onclick="createCustomer()" class="btn btn-success" style="margin-top:5px;">
+          Guardar cliente
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 🔹 PRODUCTOS -->
+  <div class="x_panel">
+    <div class="x_title">
+      <h2>Productos</h2>
+    </div>
+
+    <div class="x_content">
+
+      <select id="product" class="form-control">
+        {% for product in products %}
+        <option value="{{ product.id }}" data-price="{{ product.price }}">
+          {{ product.name }} - ${{ product.price }}
+        </option>
+        {% endfor %}
+      </select>
+
+      <input type="number" id="quantity" value="1" class="form-control" style="margin-top:5px;">
+
+      <button onclick="addProduct()" class="btn btn-success" style="margin-top:5px;">
+        Agregar
+      </button>
+
+      <!-- 🔥 FEEDBACK -->
+      <div id="productMessage" style="margin-top:5px;"></div>
+
+    </div>
+  </div>
+
+  <!-- 🔹 CARRITO -->
+  <div class="x_panel">
+    <div class="x_title">
+      <h2>Resumen</h2>
+    </div>
+
+    <div class="x_content">
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Producto</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Subtotal</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="cart"></tbody>
+      </table>
+
+      <h3>Total: $<span id="total">0</span></h3>
+
+      <select id="payment_method" class="form-control">
+        <option value="">-- Método de pago --</option>
+        <option value="cash">Efectivo</option>
+        <option value="card">Tarjeta</option>
+        <option value="transfer">Transferencia</option>
+      </select>
+
+      <button onclick="saveSale()" class="btn btn-primary" style="margin-top:10px;">
+        Guardar venta
+      </button>
+
+    </div>
+  </div>
+
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+<script>
+let cart = [];
+
+// 🔹 CSRF
+function getCSRFToken() {
+  return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+
+// 🔥 DOM READY (FIX REAL)
+document.addEventListener("DOMContentLoaded", function() {
+
+  renderCart();
+
+  const inputNit = document.getElementById('customerNit');
+
+  inputNit.addEventListener('keyup', function() {
+
+    const nit = this.value.trim();
+    const status = document.getElementById('customerStatus');
+
+    if (!nit) {
+      status.innerText = '';
+      return;
+    }
+
+    fetch(`/api/customers/?nit=${nit}`)
+    .then(res => res.json())
+    .then(data => {
+
+      if (data.id) {
+        document.getElementById('customer').value = data.id;
+
+        status.innerText = "✔ Cliente encontrado";
+        status.style.color = "green";
+
+        document.getElementById('newCustomerForm').style.display = 'none';
+      } else {
+        status.innerText = "⚠ Cliente no registrado";
+        status.style.color = "orange";
+      }
+
+    })
+    .catch(() => {
+      status.innerText = "Error al buscar";
+      status.style.color = "red";
+    });
+
+  });
+
+});
+
+// 🔥 MOSTRAR FORM
+function showCreateForm() {
+  document.getElementById('newCustomerForm').style.display = 'block';
+
+  const nit = document.getElementById('customerNit').value;
+  document.getElementById('newCustomerNit').value = nit;
+}
+
+// 🔥 CREAR CLIENTE
+function createCustomer() {
+
+  const data = {
+    nit: document.getElementById('newCustomerNit').value,
+    name: document.getElementById('newCustomerName').value,
+    lastname: document.getElementById('newCustomerLastname').value,
+    email: document.getElementById('newCustomerEmail').value,
+    phone: document.getElementById('newCustomerPhone').value
+  };
+
+  fetch('/api/customers/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCSRFToken()
+    },
+    body: JSON.stringify(data)
+  })
+  .then(res => res.json())
+  .then(customer => {
+
+    const select = document.getElementById('customer');
+
+    const option = document.createElement('option');
+    option.value = customer.id;
+    option.text = `${customer.name}`;
+
+    select.appendChild(option);
+    select.value = customer.id;
+
+    document.getElementById('customerStatus').innerText = "✔ Cliente creado";
+    document.getElementById('customerStatus').style.color = "green";
+
+    document.getElementById('newCustomerForm').style.display = 'none';
+
+  });
+}
+
+// 🔹 AGREGAR PRODUCTO
+function addProduct() {
+
+  const productSelect = document.getElementById('product');
+  const quantity = parseInt(document.getElementById('quantity').value);
+  const message = document.getElementById('productMessage');
+
+  if (!quantity || quantity <= 0) {
+    message.innerText = "Cantidad inválida";
+    message.style.color = "red";
+    return;
+  }
+
+  const productId = productSelect.value;
+  const productName = productSelect.options[productSelect.selectedIndex].text;
+  const price = parseFloat(productSelect.options[productSelect.selectedIndex].dataset.price);
+
+  const existing = cart.find(p => p.product_id == productId);
+
+  if (existing) {
+    existing.quantity += quantity;
+  } else {
+    cart.push({
+      product_id: productId,
+      name: productName,
+      price: price,
+      quantity: quantity
+    });
+  }
+
+  message.innerText = "Producto agregado";
+  message.style.color = "green";
+
+  renderCart();
+}
+
+// 🔹 RENDER
+function renderCart() {
+
+  const tbody = document.getElementById('cart');
+  tbody.innerHTML = '';
+
+  let total = 0;
+
+  cart.forEach((item, index) => {
+
+    const subtotal = item.price * item.quantity;
+    total += subtotal;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${item.name}</td>
+        <td>${item.quantity}</td>
+        <td>${item.price}</td>
+        <td>${subtotal.toFixed(2)}</td>
+        <td>
+          <button onclick="removeProduct(${index})" class="btn btn-danger btn-sm">X</button>
+        </td>
+      </tr>
+    `;
+  });
+
+  document.getElementById('total').innerText = total.toFixed(2);
+}
+
+// 🔹 ELIMINAR
+function removeProduct(index) {
+  cart.splice(index, 1);
+  renderCart();
+}
+
+// 🔹 GUARDAR VENTA
+function saveSale() {
+
+  const customerId = document.getElementById('customer').value;
+  const paymentMethod = document.getElementById('payment_method').value;
+
+  if (!customerId) return alert("Selecciona cliente");
+  if (!cart.length) return alert("Agrega productos");
+  if (!paymentMethod) return alert("Selecciona método de pago");
+
+  fetch('/api/sales/create/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': getCSRFToken()
+    },
+    body: JSON.stringify({
+      customer_id: customerId,
+      user_id: 1,
+      payment_method: paymentMethod,
+      products: cart
+    })
+  })
+  .then(() => {
+    alert("Venta guardada");
+    cart = [];
+    renderCart();
+  });
+
+}
+</script>
+
+{% endblock %}

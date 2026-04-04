@@ -1,0 +1,96 @@
+{% extends "dashboard/base_site.html" %}
+
+{% block content %}
+<div class="right_col">
+
+  <h2>Detalle del Cliente</h2>
+
+  <div class="x_panel">
+    <div class="x_title">
+      <h2>Información</h2>
+    </div>
+
+    <div class="x_content">
+
+      <table class="table table-bordered">
+        <tr>
+          <th>ID</th>
+          <td id="c_id"></td>
+        </tr>
+        <tr>
+          <th>Nombre</th>
+          <td id="c_name"></td>
+        </tr>
+        <tr>
+          <th>Apellido</th>
+          <td id="c_lastname"></td>
+        </tr>
+        <tr>
+          <th>NIT</th>
+          <td id="c_nit"></td>
+        </tr>
+        <tr>
+          <th>Email</th>
+          <td id="c_email"></td>
+        </tr>
+        <tr>
+          <th>Teléfono</th>
+          <td id="c_phone"></td>
+        </tr>
+      </table>
+
+      <br>
+
+      <button onclick="goBack()" class="btn btn-secondary">
+        ← Volver
+      </button>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+// 🔥 Django te pasa el ID aquí
+const customerId = "{{ customer_id }}";
+
+
+// 🔹 Cargar detalle
+function loadCustomerDetail() {
+
+  fetch(`/api/customers/${customerId}/`)
+    .then(res => res.json())
+    .then(data => {
+
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
+
+      document.getElementById('c_id').innerText = data.id;
+      document.getElementById('c_name').innerText = data.name;
+      document.getElementById('c_lastname').innerText = data.lastname;
+      document.getElementById('c_nit').innerText = data.nit;
+      document.getElementById('c_email').innerText = data.email;
+      document.getElementById('c_phone').innerText = data.phone;
+
+    })
+    .catch(err => console.error(err));
+}
+
+
+// 🔹 Volver
+function goBack() {
+  window.location.href = "/dashboard/customers/";
+}
+
+
+// 🔹 Init
+window.onload = function() {
+  loadCustomerDetail();
+};
+
+</script>
+
+{% endblock %}

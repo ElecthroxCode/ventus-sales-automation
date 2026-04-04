@@ -1,0 +1,160 @@
+{% extends "dashboard/base_site.html" %}
+
+{% block content %}
+<div class="right_col">
+
+  <h2 style="color:#26a69a;">Catálogo de Productos</h2>
+
+  <!-- 🔹 BUSCADOR -->
+  <div class="x_panel">
+    <div class="x_title">
+      <h2 style="color:#26a69a;">Buscar Producto</h2>
+    </div>
+
+    <div class="x_content">
+
+      <div class="row">
+        <div class="col-md-4">
+          <input 
+            type="text" 
+            id="search" 
+            placeholder="Buscar producto..." 
+            class="form-control"
+          >
+        </div>
+
+        <div class="col-md-2">
+          <button onclick="resetSearch()" class="btn btn-secondary">
+            Mostrar todos
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 🔹 TABLA -->
+  <div class="x_panel">
+    <div class="x_title">
+      <h2 style="color:#26a69a;">Lista de Productos</h2>
+    </div>
+
+    <div class="x_content">
+
+      <table class="table table-hover">
+        <thead style="background-color:#e0f2f1;">
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Precio</th>
+            <th>Categoría</th>
+            <th>Stock</th> <!-- 🔥 NUEVA COLUMNA -->
+          </tr>
+        </thead>
+
+        <tbody id="productTable"></tbody>
+
+      </table>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+let debounceTimer = null;
+
+// 🔹 Cargar productos
+function loadProducts(search = '') {
+
+  let url = '/api/products/';
+
+  if (search) {
+    url += `?search=${search}`;
+  }
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => renderProducts(data))
+    .catch(err => console.error(err));
+}
+
+
+// 🔹 Obtener color según stock (UX PRO)
+function getStockBadge(stock) {
+
+  if (stock <= 5) {
+    return `<span style="color:white; background:red; padding:4px 8px; border-radius:5px;">Bajo (${stock})</span>`;
+  }
+
+  if (stock <= 15) {
+    return `<span style="color:black; background:orange; padding:4px 8px; border-radius:5px;">Medio (${stock})</span>`;
+  }
+
+  return `<span style="color:white; background:#00c6aa; padding:4px 8px; border-radius:5px;">Alto (${stock})</span>`;
+}
+
+
+// 🔹 Render tabla
+function renderProducts(products) {
+  const tbody = document.getElementById('productTable');
+  tbody.innerHTML = '';
+
+  if (products.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align:center;">
+          No se encontraron productos
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  products.forEach(product => {
+
+    const stock = product.stock_quantity ?? 0;
+    const stockHTML = getStockBadge(stock);
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${product.id}</td>
+        <td>${product.name}</td>
+        <td>$${product.price}</td>
+        <td>${product.category_name || ''}</td>
+        <td>${stockHTML}</td>
+      </tr>
+    `;
+  });
+}
+
+
+// 🔹 Búsqueda con debounce
+document.getElementById('search').addEventListener('keyup', function() {
+
+  const value = this.value;
+
+  clearTimeout(debounceTimer);
+
+  debounceTimer = setTimeout(() => {
+    loadProducts(value);
+  }, 400);
+});
+
+
+// 🔹 Resetear búsqueda
+function resetSearch() {
+  document.getElementById('search').value = '';
+  loadProducts();
+}
+
+
+// 🔹 Inicializar
+window.onload = function() {
+  loadProducts();
+};
+
+</script>
+
+{% endblock %}

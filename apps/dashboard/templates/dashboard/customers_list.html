@@ -1,0 +1,162 @@
+{% extends "dashboard/base_site.html" %}
+
+{% block content %}
+<div class="right_col">
+
+  <h2>Listado de Clientes</h2>
+
+  <!-- 🔹 BUSCADOR -->
+  <div class="x_panel">
+    <div class="x_title">
+      <h2>Buscar Cliente</h2>
+    </div>
+
+    <div class="x_content">
+
+      <div class="row">
+        <div class="col-md-4">
+          <input 
+            type="text" 
+            id="searchCustomer" 
+            class="form-control"
+            placeholder="Nombre, apellido o NIT">
+        </div>
+
+        <div class="col-md-2">
+          <button onclick="loadCustomers()" class="btn btn-primary">
+            Buscar
+          </button>
+        </div>
+
+        <div class="col-md-2">
+          <button onclick="resetSearch()" class="btn btn-secondary">
+            Mostrar todos
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 🔹 TABLA -->
+  <div class="x_panel">
+    <div class="x_title">
+      <h2>Clientes</h2>
+    </div>
+
+    <div class="x_content">
+
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>NIT</th>
+            <th>Email</th>
+            <th>Teléfono</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody id="customersTable"></tbody>
+
+      </table>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+
+let debounceTimer = null;
+
+// 🔹 Cargar clientes
+function loadCustomers() {
+
+  const search = document.getElementById('searchCustomer').value;
+
+  let url = '/api/customers/';
+
+  if (search) {
+    url += `?search=${search}`;
+  }
+
+  fetch(url)
+    .then(res => res.json())
+    .then(data => renderCustomers(data))
+    .catch(err => console.error(err));
+}
+
+
+// 🔹 Render tabla
+function renderCustomers(customers) {
+
+  const tbody = document.getElementById('customersTable');
+  tbody.innerHTML = '';
+
+  if (!customers || customers.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align:center;">
+          No se encontraron clientes
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  customers.forEach(customer => {
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${customer.id}</td>
+        <td>${customer.name} ${customer.lastname}</td>
+        <td>${customer.nit}</td>
+        <td>${customer.email}</td>
+        <td>${customer.phone}</td>
+        <td>
+          <button onclick="viewCustomer(${customer.id})" class="btn btn-info btn-sm">
+            Ver
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+
+}
+
+
+// 🔹 Ver detalle
+function viewCustomer(id) {
+  window.location.href = `/dashboard/customers/${id}/`;
+}
+
+
+// 🔹 Reset
+function resetSearch() {
+  document.getElementById('searchCustomer').value = '';
+  loadCustomers();
+}
+
+
+// 🔹 Debounce (UX PRO)
+document.getElementById('searchCustomer').addEventListener('keyup', function() {
+
+  clearTimeout(debounceTimer);
+
+  debounceTimer = setTimeout(() => {
+    loadCustomers();
+  }, 400);
+
+});
+
+
+// 🔹 Init
+window.onload = function() {
+  loadCustomers();
+};
+
+</script>
+
+{% endblock %}
