@@ -42,7 +42,7 @@ class SalesListView(APIView):
     def get(self, request):
         sales = Sale.objects.select_related('customer')
 
-        # 🔥 BUSQUEDA PRO (nombre, apellido, NIT)
+        # BUSQUEDA PRO (nombre, apellido, NIT)
         search = request.query_params.get('search')
         if search:
             sales = sales.filter(

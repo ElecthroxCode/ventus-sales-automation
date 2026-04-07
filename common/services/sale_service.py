@@ -9,7 +9,7 @@ from decimal import Decimal
 @transaction.atomic
 def create_sale(data):
 
-    # 🔥 VALIDACIÓN BÁSICA
+    # VALIDACIÓN BÁSICA
     if not data.get("products"):
         raise ValueError("La venta debe tener al menos un producto")
 
@@ -42,13 +42,13 @@ def create_sale(data):
         if quantity <= 0:
             raise ValueError("Cantidad inválida")
 
-        # 🔥 BLOQUEO DE FILA
+        # BLOQUEO DE FILA
         try:
             product = Product.objects.select_for_update().get(id=product_id)
         except Product.DoesNotExist:
             raise ValueError(f"Producto {product_id} no existe")
 
-        # 🔥 VALIDAR STOCK
+        # VALIDAR STOCK
         if product.stock_quantity < quantity:
             raise ValueError(
                 f"Stock insuficiente para {product.name}. Disponible: {product.stock_quantity}"
@@ -66,7 +66,7 @@ def create_sale(data):
             subtotal=subtotal
         )
 
-        # 🔥 DESCONTAR STOCK (optimizado)
+        # DESCONTAR STOCK (optimizado)
         product.stock_quantity -= quantity
         product.save(update_fields=["stock_quantity"])
 
