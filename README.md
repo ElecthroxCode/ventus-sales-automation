@@ -92,6 +92,9 @@ config/
  └── urls.py
 ```
 
+## 📊 Modelo Entidad-Relación (MER)
+![Diagrama MER](docs/images/mer-diagram.jpg)
+
 ## 🔗 Endpoints principales
 - `GET /api/customers/` → Listado de clientes  
 - `GET /api/customers/<id>/` → Detalle de cliente  
