@@ -1,114 +1,93 @@
+import random
+from datetime import timedelta
+from django.utils import timezone
+
 from apps.sales.models import Sale, SaleDetail
 from apps.customers.models import Customer
-from apps.products.models import Product
+from apps.products.models import Product, Category
 from django.contrib.auth.models import User
-from django.utils import timezone
-from datetime import timedelta
 
 print("🚀 Iniciando carga de datos...")
 
-customers = list(Customer.objects.all())
-products = list(Product.objects.all())
+# =========================
+# 👤 USER
+# =========================
 user = User.objects.first()
 
-if len(customers) < 2 or len(products) < 4:
-    print("❌ Necesitas al menos 2 clientes y 4 productos")
-    exit()
+# =========================
+# 🧑 CLIENTES
+# =========================
+if Customer.objects.count() == 0:
+    customers = [
+        Customer.objects.create(name="Juan Perez", email="juan@test.com"),
+        Customer.objects.create(name="Maria Gomez", email="maria@test.com"),
+        Customer.objects.create(name="Carlos Lopez", email="carlos@test.com"),
+    ]
+else:
+    customers = list(Customer.objects.all())
 
 # =========================
-# 🔥 VENTA 1 (HOY)
+# 📦 CATEGORIAS
 # =========================
-sale1 = Sale.objects.create(
-    customer=customers[0],
-    user=user,
-    payment_method='cash',
-    date=timezone.now(),
-    total=0
-)
-
-p1 = products[0]
-
-SaleDetail.objects.create(
-    sale=sale1,
-    product=p1,
-    quantity=2,
-    unit_price=p1.price,
-    subtotal=p1.price * 2
-)
-
-sale1.total = p1.price * 2
-sale1.save()
+if Category.objects.count() == 0:
+    cat1 = Category.objects.create(name="Tecnología")
+    cat2 = Category.objects.create(name="Accesorios")
+else:
+    cat1, cat2 = Category.objects.all()[:2]
 
 # =========================
-# 🔥 VENTA 2 (AYER)
+# 🛒 PRODUCTOS
 # =========================
-sale2 = Sale.objects.create(
-    customer=customers[1],
-    user=user,
-    payment_method='card',
-    date=timezone.now() - timedelta(days=1),
-    total=0
-)
-
-p2 = products[1]
-
-SaleDetail.objects.create(
-    sale=sale2,
-    product=p2,
-    quantity=1,
-    unit_price=p2.price,
-    subtotal=p2.price
-)
-
-sale2.total = p2.price
-sale2.save()
+if Product.objects.count() == 0:
+    products = [
+        Product.objects.create(name="Laptop", price=2500, category=cat1),
+        Product.objects.create(name="Teclado", price=150, category=cat2),
+        Product.objects.create(name="Mouse", price=80, category=cat2),
+        Product.objects.create(name="Monitor", price=900, category=cat1),
+        Product.objects.create(name="Audífonos", price=200, category=cat2),
+    ]
+else:
+    products = list(Product.objects.all())
 
 # =========================
-# 🔥 VENTA 3 (HACE 3 DÍAS)
+# 🔥 FUNCIÓN PARA CREAR VENTAS
 # =========================
-sale3 = Sale.objects.create(
-    customer=customers[0],
-    user=user,
-    payment_method='transfer',
-    date=timezone.now() - timedelta(days=3),
-    total=0
-)
+def create_sales(quantity, days_ago):
+    for _ in range(quantity):
+        customer = random.choice(customers)
+        product = random.choice(products)
+        qty = random.randint(1, 3)
 
-p3 = products[2]
+        date = timezone.now() - timedelta(days=days_ago)
 
-SaleDetail.objects.create(
-    sale=sale3,
-    product=p3,
-    quantity=3,
-    unit_price=p3.price,
-    subtotal=p3.price * 3
-)
+        sale = Sale.objects.create(
+            customer=customer,
+            user=user,
+            payment_method=random.choice(['cash', 'card', 'transfer']),
+            date=date,
+            total=0
+        )
 
-sale3.total = p3.price * 3
-sale3.save()
+        subtotal = product.price * qty
+
+        SaleDetail.objects.create(
+            sale=sale,
+            product=product,
+            quantity=qty,
+            unit_price=product.price,
+            subtotal=subtotal
+        )
+
+        sale.total = subtotal
+        sale.save()
 
 # =========================
-# 🔥 VENTA 4 (HACE 7 DÍAS)
+#  DISTRIBUCIÓN DE VENTAS
 # =========================
-sale4 = Sale.objects.create(
-    customer=customers[1],
-    user=user,
-    payment_method='cash',
-    date=timezone.now() - timedelta(days=7),
-    total=0
-)
 
-p4 = products[3]
+create_sales(10, 30)  # hace 30 días
+create_sales(7, 15)   # hace 15 días
+create_sales(10, 7)   # hace 7 días
+create_sales(5, 0)    # hoy
 
-SaleDetail.objects.create(
-    sale=sale4,
-    product=p4,
-    quantity=2,
-    unit_price=p4.price,
-    subtotal=p4.price * 2
-)
-
-sale4.total = p4.price * 2
-sale4.save()
-
-print("🔥 Datos de prueba creados correctamente")
+print("Datos creados correctamente")
