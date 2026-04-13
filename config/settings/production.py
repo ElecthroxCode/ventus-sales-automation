@@ -2,10 +2,14 @@ from .base import *
 import dj_database_url
 import os
 
-DEBUG = False
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*']  # luego puedes restringir
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv("DATABASE_URL"))
+    'default': dj_database_url.parse(
+        os.getenv("DATABASE_URL"),
+        conn_max_age=600
+    )
 }
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
