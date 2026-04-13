@@ -3,7 +3,9 @@ import dj_database_url
 import os
 
 
-ALLOWED_HOSTS = ['*']  # luego puedes restringir
+DEBUG = False
+
+ALLOWED_HOSTS = ['*']
 
 DATABASES = {
     'default': dj_database_url.parse(
