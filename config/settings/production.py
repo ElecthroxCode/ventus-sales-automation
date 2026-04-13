@@ -8,7 +8,12 @@ ALLOWED_HOSTS = [
     ".railway.app",
     "localhost",
     "127.0.0.1",
+    os.getenv("RAILWAY_PUBLIC_DOMAIN", ""),
+    os.getenv("RAILWAY_PRIVATE_DOMAIN", ""),
 ]
+
+# Strip empty strings that result from unset env vars
+ALLOWED_HOSTS = [h for h in ALLOWED_HOSTS if h]
 
 DATABASES = {
     "default": dj_database_url.parse(
@@ -26,11 +31,14 @@ SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-# Archivos estáticos
+# Static files
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "apps/dashboard/static",
+]
 
-# Whitenoise para servir estáticos en producción
+# WhiteNoise serves static files in production
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  
