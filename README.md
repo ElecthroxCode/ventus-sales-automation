@@ -93,7 +93,7 @@ config/
 ```
 
 ## 📊 Modelo Entidad-Relación (MER)
-![Diagrama MER](docs/images/mer-diagram.jpg)
+![Diagrama MER](docs/images/mer-diagram.jpeg)
 
 ## 🔗 Endpoints principales
 - `GET /api/customers/` → Listado de clientes  
