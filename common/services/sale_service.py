@@ -7,24 +7,21 @@ from decimal import Decimal
 
 
 @transaction.atomic
-def create_sale(data):
+def create_sale(data, user):
 
     # VALIDACIÓN BÁSICA
     if not data.get("products"):
         raise ValueError("La venta debe tener al menos un producto")
 
-    # 🔹 Obtener cliente y usuario
+    # Obtener cliente y usuario
     try:
         customer = Customer.objects.get(id=data["customer_id"])
     except Customer.DoesNotExist:
         raise ValueError("Cliente no existe")
 
-    try:
-        user = User.objects.get(id=data["user_id"])
-    except User.DoesNotExist:
-        raise ValueError("Usuario no existe")
+   
 
-    # 🔹 Crear venta inicial
+    # Crear venta inicial
     sale = Sale.objects.create(
         customer=customer,
         user=user,
@@ -34,7 +31,7 @@ def create_sale(data):
 
     total = Decimal('0.00')
 
-    # 🔹 Procesar productos
+    # Procesar productos
     for item in data["products"]:
         product_id = item.get("product_id")
         quantity = int(item.get("quantity", 0))
@@ -57,7 +54,7 @@ def create_sale(data):
         unit_price = product.price
         subtotal = unit_price * quantity
 
-        # 🔹 Crear detalle
+        # Crear detalle
         SaleDetail.objects.create(
             sale=sale,
             product=product,
@@ -72,7 +69,7 @@ def create_sale(data):
 
         total += subtotal
 
-    # 🔹 Guardar total final
+    # Guardar total final
     sale.total = total
     sale.save(update_fields=["total"])
 

@@ -52,11 +52,11 @@
 
 <script>
 
-// 🔥 Django te pasa el ID aquí
+// Django te pasa el ID aquí
 const customerId = "{{ customer_id }}";
 
 
-// 🔹 Cargar detalle
+// Cargar detalle
 function loadCustomerDetail() {
 
   fetch(`/api/customers/${customerId}/`)
@@ -80,13 +80,13 @@ function loadCustomerDetail() {
 }
 
 
-// 🔹 Volver
+// Volver
 function goBack() {
   window.location.href = "/dashboard/customers/";
 }
 
 
-// 🔹 Init
+// Init
 window.onload = function() {
   loadCustomerDetail();
 };

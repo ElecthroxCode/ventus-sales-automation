@@ -5,7 +5,7 @@
 
   <h2>Nueva Venta</h2>
 
-  <!-- 🔹 CLIENTE -->
+  <!--  CLIENTE -->
   <div class="x_panel">
     <div class="x_title">
       <h2>Cliente</h2>
@@ -13,10 +13,10 @@
 
     <div class="x_content">
 
-      <!-- 🔍 BUSCAR -->
+      <!--  BUSCAR -->
       <input type="text" id="customerNit" placeholder="Ingresar NIT o Cédula" class="form-control">
 
-      <!-- 🔥 MENSAJE BIEN UBICADO -->
+      <!--  MENSAJE BIEN UBICADO -->
       <div id="customerStatus" style="margin-top:8px; font-weight:bold;"></div>
 
       <!-- BOTÓN CREAR -->
@@ -52,7 +52,7 @@
     </div>
   </div>
 
-  <!-- 🔹 PRODUCTOS -->
+  <!--  PRODUCTOS -->
   <div class="x_panel">
     <div class="x_title">
       <h2>Productos</h2>
@@ -74,7 +74,7 @@
         Agregar
       </button>
 
-      <!-- 🔥 FEEDBACK -->
+      <!--  FEEDBACK -->
       <div id="productMessage" style="margin-top:5px;"></div>
 
     </div>
@@ -122,12 +122,12 @@
 <script>
 let cart = [];
 
-// 🔹 CSRF
+//  CSRF
 function getCSRFToken() {
   return document.querySelector('[name=csrfmiddlewaretoken]').value;
 }
 
-// 🔥 DOM READY (FIX REAL)
+//  DOM READY (FIX REAL)
 document.addEventListener("DOMContentLoaded", function() {
 
   renderCart();
@@ -170,7 +170,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 });
 
-// 🔥 MOSTRAR FORM
+//  MOSTRAR FORM
 function showCreateForm() {
   document.getElementById('newCustomerForm').style.display = 'block';
 
@@ -178,7 +178,7 @@ function showCreateForm() {
   document.getElementById('newCustomerNit').value = nit;
 }
 
-// 🔥 CREAR CLIENTE
+// CREAR CLIENTE
 function createCustomer() {
 
   const data = {
@@ -217,7 +217,7 @@ function createCustomer() {
   });
 }
 
-// 🔹 AGREGAR PRODUCTO
+// AGREGAR PRODUCTO
 function addProduct() {
 
   const productSelect = document.getElementById('product');
@@ -240,7 +240,7 @@ function addProduct() {
     existing.quantity += quantity;
   } else {
     cart.push({
-      product_id: productId,
+      product_id: parseInt(productId),
       name: productName,
       price: price,
       quantity: quantity
@@ -253,7 +253,7 @@ function addProduct() {
   renderCart();
 }
 
-// 🔹 RENDER
+//  RENDER
 function renderCart() {
 
   const tbody = document.getElementById('cart');
@@ -282,13 +282,13 @@ function renderCart() {
   document.getElementById('total').innerText = total.toFixed(2);
 }
 
-// 🔹 ELIMINAR
+// ELIMINAR
 function removeProduct(index) {
   cart.splice(index, 1);
   renderCart();
 }
 
-// 🔹 GUARDAR VENTA
+// GUARDAR VENTA
 function saveSale() {
 
   const customerId = document.getElementById('customer').value;
@@ -306,16 +306,24 @@ function saveSale() {
     },
     body: JSON.stringify({
       customer_id: customerId,
-      user_id: 1,
       payment_method: paymentMethod,
       products: cart
     })
   })
-  .then(() => {
-    alert("Venta guardada");
-    cart = [];
-    renderCart();
-  });
+  .then(response => {
+  if (!response.ok) {
+    throw new Error("Error al crear la venta");
+  }
+  return response.json();
+})
+.then(data => {
+  alert("Venta guardada correctamente");
+  cart = [];
+  renderCart();
+})
+.catch(error => {
+  alert("No estás autenticado o hubo un error");
+});
 
 }
 </script>

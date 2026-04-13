@@ -9,15 +9,19 @@ from common.services.sale_service import create_sale
 from apps.sales.models import Sale
 from apps.sales.serializers.sale_list_serializer import SaleListSerializer
 
+from rest_framework.permissions import IsAuthenticated
+
 
 class SaleCreateView(APIView):
+    
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         serializer = SaleCreateSerializer(data=request.data)
 
         if serializer.is_valid():
             try:
-                sale = create_sale(serializer.validated_data)
+                sale = create_sale(serializer.validated_data, request.user)
 
                 return Response({
                     "message": "Venta creada correctamente",
@@ -42,7 +46,7 @@ class SalesListView(APIView):
     def get(self, request):
         sales = Sale.objects.select_related('customer')
 
-        # BUSQUEDA PRO (nombre, apellido, NIT)
+        # BUSQUEDA (nombre, apellido, NIT)
         search = request.query_params.get('search')
         if search:
             sales = sales.filter(
@@ -51,12 +55,12 @@ class SalesListView(APIView):
                 Q(customer__nit__icontains=search)
             )
 
-        # 🔹 método de pago
+        # método de pago
         payment_method = request.query_params.get('payment_method')
         if payment_method:
             sales = sales.filter(payment_method=payment_method)
 
-        # 🔹 fechas
+        # fechas
         start_date = request.query_params.get('start_date')
         end_date = request.query_params.get('end_date')
         if start_date and end_date:
@@ -86,3 +90,6 @@ class SaleDetailView(APIView):
 
         serializer = SaleListSerializer(sale)
         return Response(serializer.data)
+    
+
+

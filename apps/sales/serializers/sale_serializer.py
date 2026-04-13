@@ -8,7 +8,7 @@ class ProductItemSerializer(serializers.Serializer):
 
 class SaleCreateSerializer(serializers.Serializer):
   customer_id=serializers.IntegerField()
-  user_id=serializers.IntegerField()
+  #user_id=serializers.IntegerField()
   payment_method=serializers.CharField(max_length=50)
   products=ProductItemSerializer(many=True)
   

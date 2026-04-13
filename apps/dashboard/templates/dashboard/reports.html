@@ -1,0 +1,253 @@
+{% extends "dashboard/base_site.html" %}
+
+{% block title %} Reportes {% endblock %}
+
+{% block content %}
+
+<div class="right_col">
+
+  <div class="report-container mt-4">
+
+    <h3 class="mb-4">
+      <i class="fa-solid fa-chart-line"></i> Reporte de Ventas
+    </h3>
+
+    <!-- FILTROS -->
+    <div class="card card-custom filter-card mb-4">
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+
+          <div class="col-md-3">
+            <label>Fecha inicio</label>
+            <input type="date" id="start_date" class="form-control">
+          </div>
+
+          <div class="col-md-3">
+            <label>Fecha fin</label>
+            <input type="date" id="end_date" class="form-control">
+          </div>
+
+          <div class="col-md-3">
+            <label>Método de pago</label>
+            <select id="payment_method" class="form-control">
+              <option value="">Todos</option>
+            </select>
+          </div>
+
+          <!-- Botones alineados con los inputs -->
+          <div class="col-md-3 d-flex gap-2">
+            <button class="btn btn-search w-50" id="btnSearch">
+              <i class="fa-solid fa-magnifying-glass"></i> Buscar
+            </button>
+            <button class="btn btn-clear w-50" id="btnClear">
+              Limpiar
+            </button>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="row mb-4">
+      <div class="col-md-4">
+        <div class="card card-custom summary-card">
+          <h5>Total Ventas</h5>
+          <h3 id="totalSales">0</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card card-custom summary-card">
+          <h5>Ingresos Totales</h5>
+          <h3 id="totalAmount">$0</h3>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card card-custom summary-card">
+          <h5>Promedio por venta</h5>
+          <h3 id="avgSale">$0</h3>
+        </div>
+      </div>
+    </div>
+
+    <!-- TABLA -->
+    <div class="card card-custom mb-0">
+      <div class="card-body p-0">
+        <table class="table table-hover align-middle mb-0">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Cliente</th>
+              <th>Método</th>
+              <th>Total</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody id="reportTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ESTILOS -->
+<style>
+  .report-container {
+    max-width: 1200px;
+  }
+
+  .card-custom {
+    border-radius: 14px;
+    border: none;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+  }
+
+  .filter-card {
+    background: white;
+    padding: 25px;
+    border-bottom: 2px solid #f0f2f5;
+  }
+
+  .form-control {
+    height: 42px;
+    border-radius: 8px;
+  }
+
+  .btn-search {
+    background: #4a6cf7;
+    color: white;
+    border-radius: 8px;
+    height: 42px;
+    border: none;
+    font-weight: 500;
+  }
+
+  .btn-search:hover {
+    background: #3b5be0;
+  }
+
+  .btn-clear {
+    background: #f8f9fa;
+    color: #495057;
+    border-radius: 8px;
+    height: 42px;
+    border: 1px solid #dee2e6;
+    font-weight: 500;
+  }
+
+  .btn-clear:hover {
+    background: #e9ecef;
+    color: #212529;
+  }
+
+  .summary-card {
+    background: white;
+    text-align: center;
+    padding: 30px 20px;
+    margin-top: 10px;
+  }
+
+  thead {
+    background: #eef2ff;
+  }
+
+  .table.table-hover tbody tr:hover td {
+    background-color: #eaf2ff !important;
+    transition: background-color 0.2s ease;
+  }
+
+  /* Footer limpio y unido */
+  footer {
+    margin-top: 0;
+    padding: 15px 0;
+    border-top: 1px solid #dee2e6;
+    text-align: center;
+    color: #6c757d;
+    background-color: #f8f9fa;
+  }
+</style>
+
+<!-- JS -->
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  loadPaymentMethods();
+  loadReport();
+
+  document.getElementById('btnSearch').addEventListener('click', loadReport);
+  document.getElementById('btnClear').addEventListener('click', clearFilters);
+});
+
+function loadPaymentMethods() {
+  fetch('/api/sales/payment-methods/')
+    .then(res => res.json())
+    .then(data => {
+      const select = document.getElementById('payment_method');
+      data.forEach(method => {
+        select.innerHTML += `<option value="${method.value}">${method.label}</option>`;
+      });
+    });
+}
+
+function clearFilters() {
+  document.getElementById('start_date').value = '';
+  document.getElementById('end_date').value = '';
+  document.getElementById('payment_method').value = '';
+  loadReport();
+}
+
+function buildURL() {
+  const start = document.getElementById('start_date').value;
+  const end = document.getElementById('end_date').value;
+  const method = document.getElementById('payment_method').value;
+
+  let url = '/api/sales/?';
+  if (start && end) url += `start_date=${start}&end_date=${end}&`;
+  if (method) url += `payment_method=${method}&`;
+  return url;
+}
+
+function loadReport() {
+  fetch(buildURL())
+    .then(res => res.json())
+    .then(data => {
+      renderTable(data);
+      calculateSummary(data);
+    });
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('reportTable');
+  tbody.innerHTML = '';
+
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center">Sin resultados</td></tr>`;
+    return;
+  }
+
+  data.forEach(sale => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${sale.id}</td>
+        <td>${sale.customer_name || 'N/A'}</td>
+        <td>${sale.payment_method}</td>
+        <td><strong>$${parseFloat(sale.total).toFixed(2)}</strong></td>
+        <td>${new Date(sale.date).toLocaleDateString()}</td>
+      </tr>
+    `;
+  });
+}
+
+function calculateSummary(data) {
+  let total = 0;
+  data.forEach(s => total += parseFloat(s.total));
+  const avg = data.length ? total / data.length : 0;
+
+  document.getElementById('totalSales').innerText = data.length;
+  document.getElementById('totalAmount').innerText = "$" + total.toFixed(2);
+  document.getElementById('avgSale').innerText = "$" + avg.toFixed(2);
+}
+</script>
+
+{% endblock %}

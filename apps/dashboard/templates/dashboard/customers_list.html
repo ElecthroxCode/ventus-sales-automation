@@ -5,7 +5,7 @@
 
   <h2>Listado de Clientes</h2>
 
-  <!-- 🔹 BUSCADOR -->
+  <!--  BUSCADOR -->
   <div class="x_panel">
     <div class="x_title">
       <h2>Buscar Cliente</h2>
@@ -38,7 +38,7 @@
     </div>
   </div>
 
-  <!-- 🔹 TABLA -->
+  <!--  TABLA -->
   <div class="x_panel">
     <div class="x_title">
       <h2>Clientes</h2>
@@ -71,7 +71,7 @@
 
 let debounceTimer = null;
 
-// 🔹 Cargar clientes
+// Cargar clientes
 function loadCustomers() {
 
   const search = document.getElementById('searchCustomer').value;
@@ -89,7 +89,7 @@ function loadCustomers() {
 }
 
 
-// 🔹 Render tabla
+//  Render tabla
 function renderCustomers(customers) {
 
   const tbody = document.getElementById('customersTable');
@@ -127,20 +127,20 @@ function renderCustomers(customers) {
 }
 
 
-// 🔹 Ver detalle
+// Ver detalle
 function viewCustomer(id) {
   window.location.href = `/dashboard/customers/${id}/`;
 }
 
 
-// 🔹 Reset
+// Reset
 function resetSearch() {
   document.getElementById('searchCustomer').value = '';
   loadCustomers();
 }
 
 
-// 🔹 Debounce (UX PRO)
+// Debounce (UX PRO)
 document.getElementById('searchCustomer').addEventListener('keyup', function() {
 
   clearTimeout(debounceTimer);
@@ -152,7 +152,7 @@ document.getElementById('searchCustomer').addEventListener('keyup', function() {
 });
 
 
-// 🔹 Init
+// Init
 window.onload = function() {
   loadCustomers();
 };

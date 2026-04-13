@@ -7,13 +7,14 @@ from datetime import timedelta
 from django.db.models.functions import TruncDate
 from datetime import datetime
 from apps.products.models import Product
-
 import json
+#protege vista html
+from django.contrib.auth.decorators import login_required
 
-
+@login_required
 def dashboard_home(request):
 
-    # 🔥 FILTRO POR FECHA
+    # FILTRO POR FECHA
     start_date = request.GET.get('start_date')
     end_date = request.GET.get('end_date')
 
@@ -24,7 +25,7 @@ def dashboard_home(request):
         end_date = datetime.strptime(end_date, '%Y-%m-%d')
         sales = sales.filter(date__range=[start_date, end_date])
 
-    # 🔹 KPIs
+    # KPIs
     total_sales = sales.count()
     total_customers = Customer.objects.count()
 
@@ -36,24 +37,24 @@ def dashboard_home(request):
         avg=Avg('total')
     )['avg'] or 0
 
-    # 🔹 PRODUCTOS VENDIDOS (IMPORTANTE: usar sales filtradas)
+    # PRODUCTOS VENDIDOS (IMPORTANTE: usar sales filtradas)
     total_products_sold = (
         SaleDetail.objects
         .filter(sale__in=sales)
         .aggregate(total=Sum('quantity'))
     )['total'] or 0
 
-    # 🔹 VENTAS DEL DÍA (esto lo puedes dejar global o filtrar también)
+    # VENTAS DEL DÍA (esto lo puedes dejar global o filtrar también)
     today_sales = Sale.objects.filter(
         date__date=now().date()
     ).count()
 
-    # 🔹 NUEVOS CLIENTES
+    # NUEVOS CLIENTES
     new_customers = Customer.objects.filter(
         created_at__gte=now() - timedelta(days=7)
     ).count()
 
-    # 🔹 GRÁFICO DE LÍNEA
+    # GRÁFICO DE LÍNEA
     sales_by_day = (
         sales
         .annotate(day=TruncDate('date'))
@@ -65,7 +66,7 @@ def dashboard_home(request):
     sales_labels = [str(item['day']) for item in sales_by_day]
     sales_data = [float(item['total']) for item in sales_by_day]
 
-    # 🔹 TOP PRODUCTOS (FILTRADO)
+    # TOP PRODUCTOS (FILTRADO)
     top_products = (
         SaleDetail.objects
         .filter(sale__in=sales)
@@ -77,7 +78,7 @@ def dashboard_home(request):
     bar_labels = [item['product__name'] for item in top_products]
     bar_data = [item['total_sold'] for item in top_products]
 
-    # 🔹 PIE POR CATEGORÍA (FILTRADO)
+    # PIE POR CATEGORÍA (FILTRADO)
     sales_by_category = (
         SaleDetail.objects
         .filter(sale__in=sales)
@@ -147,8 +148,13 @@ def customers_view(request):
     return render(request, "dashboard/customers_list.html")
 
 
-# 🔹 vista detalle de cliente
+# vista detalle de cliente
 def customer_detail_view(request, pk):
     return render(request, "dashboard/customer_detail.html", {
         "customer_id": pk
     })
+
+# vista de reportes
+def reports_view(request):
+    return render(request, "dashboard/reports.html")
+
