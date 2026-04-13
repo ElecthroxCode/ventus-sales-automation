@@ -146,7 +146,7 @@
   "model": "products.category",
   "pk": 1,
   "fields": {
-    "name": "Tecnología"
+    "name": "TecnologÃ­a"
   }
 },
 {
@@ -184,7 +184,7 @@
     "name": "Laptop Lenovo i5",
     "price": "2500000.00",
     "stock_quantity": 8,
-    "description": "Portátil 8GB RAM 512GB SSD",
+    "description": "PortÃ¡til 8GB RAM 512GB SSD",
     "category": 1
   }
 },
@@ -192,10 +192,10 @@
   "model": "products.product",
   "pk": 2,
   "fields": {
-    "name": "Mouse Inalámbrico",
+    "name": "Mouse InalÃ¡mbrico",
     "price": "45000.00",
     "stock_quantity": 50,
-    "description": "Mouse ergonómico USB",
+    "description": "Mouse ergonÃ³mico USB",
     "category": 1
   }
 },
@@ -203,7 +203,7 @@
   "model": "products.product",
   "pk": 3,
   "fields": {
-    "name": "Teclado Mecánico RGB",
+    "name": "Teclado MecÃ¡nico RGB",
     "price": "120000.00",
     "stock_quantity": 30,
     "description": "Teclado gamer retroiluminado",
@@ -214,10 +214,10 @@
   "model": "products.product",
   "pk": 4,
   "fields": {
-    "name": "Camiseta Básica",
+    "name": "Camiseta BÃ¡sica",
     "price": "35000.00",
     "stock_quantity": 98,
-    "description": "Algodón 100%",
+    "description": "AlgodÃ³n 100%",
     "category": 2
   }
 },
@@ -236,7 +236,7 @@
   "model": "products.product",
   "pk": 6,
   "fields": {
-    "name": "Silla Plástica",
+    "name": "Silla PlÃ¡stica",
     "price": "25000.00",
     "stock_quantity": 80,
     "description": "Resistente color blanco",
@@ -250,7 +250,7 @@
     "name": "Mesa Plegable",
     "price": "120000.00",
     "stock_quantity": 20,
-    "description": "Ideal para espacios pequeños",
+    "description": "Ideal para espacios pequeÃ±os",
     "category": 3
   }
 },
@@ -294,7 +294,7 @@
     "name": "Lapicero Azul",
     "price": "2000.00",
     "stock_quantity": 470,
-    "description": "Tinta líquida",
+    "description": "Tinta lÃ­quida",
     "category": 5
   }
 },
