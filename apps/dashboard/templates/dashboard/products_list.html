@@ -5,7 +5,7 @@
 
   <h2 style="color:#26a69a;">Catálogo de Productos</h2>
 
-  <!-- 🔹 BUSCADOR -->
+  <!-- BUSCADOR -->
   <div class="x_panel">
     <div class="x_title">
       <h2 style="color:#26a69a;">Buscar Producto</h2>
@@ -48,7 +48,7 @@
             <th>Nombre</th>
             <th>Precio</th>
             <th>Categoría</th>
-            <th>Stock</th> <!-- 🔥 NUEVA COLUMNA -->
+            <th>Stock</th> 
           </tr>
         </thead>
 
@@ -65,7 +65,7 @@
 
 let debounceTimer = null;
 
-// 🔹 Cargar productos
+// Cargar productos
 function loadProducts(search = '') {
 
   let url = '/api/products/';
@@ -81,7 +81,7 @@ function loadProducts(search = '') {
 }
 
 
-// 🔹 Obtener color según stock (UX PRO)
+// Obtener color según stock (UX PRO)
 function getStockBadge(stock) {
 
   if (stock <= 5) {
@@ -96,7 +96,7 @@ function getStockBadge(stock) {
 }
 
 
-// 🔹 Render tabla
+// Render tabla
 function renderProducts(products) {
   const tbody = document.getElementById('productTable');
   tbody.innerHTML = '';
@@ -130,7 +130,7 @@ function renderProducts(products) {
 }
 
 
-// 🔹 Búsqueda con debounce
+// Búsqueda con debounce
 document.getElementById('search').addEventListener('keyup', function() {
 
   const value = this.value;
@@ -143,14 +143,14 @@ document.getElementById('search').addEventListener('keyup', function() {
 });
 
 
-// 🔹 Resetear búsqueda
+// Resetear búsqueda
 function resetSearch() {
   document.getElementById('search').value = '';
   loadProducts();
 }
 
 
-// 🔹 Inicializar
+// Inicializar
 window.onload = function() {
   loadProducts();
 };

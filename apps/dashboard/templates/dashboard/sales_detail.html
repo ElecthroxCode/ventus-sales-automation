@@ -5,7 +5,7 @@
 
   <h2>Detalle de Venta</h2>
 
-  <!-- 🔹 INFO GENERAL -->
+  <!-- INFO GENERAL -->
   <div class="x_panel">
     <div class="x_title">
       <h2>Información</h2>
@@ -22,7 +22,7 @@
     </div>
   </div>
 
-  <!-- 🔹 DETALLE PRODUCTOS -->
+  <!-- DETALLE PRODUCTOS -->
   <div class="x_panel">
     <div class="x_title">
       <h2>Productos</h2>
@@ -47,7 +47,7 @@
     </div>
   </div>
 
-  <!-- 🔹 BOTÓN VOLVER -->
+  <!-- BOTÓN VOLVER -->
   <button onclick="goBack()" class="btn btn-secondary">
     ← Volver
   </button>
@@ -56,14 +56,14 @@
 
 <script>
 
-// 🔹 Obtener ID desde URL
+// Obtener ID desde URL
 function getSaleIdFromUrl() {
   const path = window.location.pathname;
   const parts = path.split('/');
-  return parts[parts.length - 2]; // /sales/ID/
+  return parts[parts.length - 2]; // /sales/ID
 }
 
-// 🔹 Cargar detalle
+// Cargar detalle
 function loadSaleDetail() {
 
   const saleId = getSaleIdFromUrl();
@@ -72,14 +72,14 @@ function loadSaleDetail() {
     .then(res => res.json())
     .then(data => {
 
-      // 🔹 Info general
+      // Info general
       document.getElementById('saleId').innerText = data.id;
       document.getElementById('customer').innerText = data.customer_name;
       document.getElementById('date').innerText = data.date;
       document.getElementById('payment').innerText = data.payment_method;
       document.getElementById('total').innerText = data.total;
 
-      // 🔹 Tabla productos
+      // Tabla productos
       const tbody = document.getElementById('detailsTable');
       tbody.innerHTML = '';
 
@@ -104,12 +104,12 @@ function loadSaleDetail() {
 
 }
 
-// 🔹 Volver
+// Volver
 function goBack() {
   window.location.href = "/dashboard/sales/";
 }
 
-// 🔹 Init
+// Init
 window.onload = function() {
   loadSaleDetail();
 };
