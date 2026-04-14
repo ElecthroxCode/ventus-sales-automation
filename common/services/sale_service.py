@@ -39,7 +39,7 @@ def create_sale(data, user):
         if quantity <= 0:
             raise ValueError("Cantidad inválida")
 
-        # BLOQUEO DE FILA
+        # BLOQUEO DE FILA-vender
         try:
             product = Product.objects.select_for_update().get(id=product_id)
         except Product.DoesNotExist:

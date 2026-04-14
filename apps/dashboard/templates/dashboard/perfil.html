@@ -1,0 +1,223 @@
+{% extends "dashboard/base_site.html" %}
+{% block content %}
+
+<div class="right_col" role="main">
+
+  <div class="clearfix"></div>
+
+  <div class="row" style="margin-top: 20px;">
+
+    
+    <!-- PERFIL -->
+    
+    <div class="col-md-4">
+
+      <div class="x_panel text-center">
+        <div class="x_title">
+          <h2>Perfil</h2>
+          <div class="clearfix"></div>
+        </div>
+
+        <div class="x_content">
+
+          <!-- AVATAR CON ICONO -->
+          <div style="position: relative; display: inline-block;">
+
+            <img id="avatarPreview"
+                 src="https://cdn-icons-png.flaticon.com/512/149/149071.png"
+                 class="img-circle"
+                 width="120"
+                 alt="avatar">
+
+            <!-- ICONO EDITAR -->
+            <span onclick="document.getElementById('avatarInput').click()"
+                  style="
+                    position:absolute;
+                    bottom:0;
+                    right:0;
+                    background:#337ab7;
+                    color:white;
+                    border-radius:50%;
+                    padding:6px;
+                    cursor:pointer;
+                  ">
+              <i class="fa fa-camera"></i>
+            </span>
+
+            <!-- INPUT OCULTO -->
+            <input type="file" id="avatarInput" accept="image/*" style="display:none;">
+
+          </div>
+
+          <h3 style="margin-top: 10px;">{{ request.user.username }}</h3>
+          <p class="text-muted">{{ request.user.email }}</p>
+
+        </div>
+      </div>
+
+    </div>
+
+    
+    <!-- FORMULARIO -->
+    
+    <div class="col-md-8">
+
+      <div class="x_panel">
+
+        <div class="x_title">
+          <h2>Editar Perfil</h2>
+          <div class="clearfix"></div>
+        </div>
+
+        <div class="x_content" style="padding: 20px;">
+
+          <form id="profileForm">
+
+            <!-- USERNAME -->
+            <div class="form-group">
+              <label>Usuario</label>
+              <input type="text" id="username" class="form-control"
+                     value="{{ request.user.username }}">
+            </div>
+
+            <!-- EMAIL -->
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" id="email" class="form-control"
+                     value="{{ request.user.email }}">
+            </div>
+
+            <!-- PASSWORD -->
+            <hr>
+            <h4>Cambiar contraseña</h4>
+
+            <div class="form-group">
+              <label>Nueva contraseña</label>
+
+              <div class="input-group">
+                <input type="password" id="password" class="form-control">
+
+                <span class="input-group-addon"
+                      style="cursor:pointer;"
+                      onclick="togglePassword()">
+                  <i id="eyeIcon" class="fa fa-eye"></i>
+                </span>
+              </div>
+
+            </div>
+
+            <!-- ALERT -->
+            <div id="alertBox" style="display:none;" class="alert"></div>
+
+            <!-- BOTÓN -->
+            <div class="text-right">
+              <button type="submit" id="saveBtn" class="btn btn-success">
+                <i class="fa fa-save"></i> Guardar cambios
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- JS -->
+
+
+<script>
+
+// MOSTRAR / OCULTAR CONTRASEÑA
+function togglePassword() {
+  const input = document.getElementById('password');
+  const icon = document.getElementById('eyeIcon');
+
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.classList.remove('fa-eye');
+    icon.classList.add('fa-eye-slash');
+  } else {
+    input.type = 'password';
+    icon.classList.remove('fa-eye-slash');
+    icon.classList.add('fa-eye');
+  }
+}
+
+// PREVIEW IMAGEN
+document.getElementById('avatarInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  reader.onload = function(event) {
+    document.getElementById('avatarPreview').src = event.target.result;
+  };
+
+  reader.readAsDataURL(file);
+});
+
+// FORM
+const form = document.getElementById('profileForm');
+const alertBox = document.getElementById('alertBox');
+const saveBtn = document.getElementById('saveBtn');
+
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const username = document.getElementById('username').value.trim();
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value.trim();
+
+  saveBtn.disabled = true;
+  saveBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Guardando...';
+
+  fetch('/api/profile/', {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      username,
+      email,
+      password
+    })
+  })
+  .then(res => {
+    if (!res.ok) {
+      return res.json().then(err => { throw err; });
+    }
+    return res.json();
+  })
+  .then(data => {
+    showAlert('Perfil actualizado correctamente ✅', 'success');
+  })
+  .catch(err => {
+    const msg = err.error || 'Error actualizando perfil ❌';
+    showAlert(msg, 'danger');
+  })
+  .finally(() => {
+    saveBtn.disabled = false;
+    saveBtn.innerHTML = '<i class="fa fa-save"></i> Guardar cambios';
+  });
+
+});
+
+// ALERTA
+function showAlert(message, type) {
+  alertBox.style.display = 'block';
+  alertBox.className = 'alert alert-' + type;
+  alertBox.innerText = message;
+}
+
+</script>
+
+{% endblock %}

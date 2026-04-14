@@ -1,0 +1,125 @@
+{% extends "dashboard/base_site.html" %}
+{% block content %}
+
+<div class="right_col" role="main">
+
+  <div class="clearfix"></div>
+
+  <div class="row" style="margin-top: 20px;">
+    
+    <div class="col-md-8 col-md-offset-2">
+      
+      <div class="x_panel">
+        
+        <div class="x_title text-center">
+          <h2><i class="fa fa-life-ring"></i> Centro de Ayuda</h2>
+          <p class="text-muted">Envíanos tu problema o solicitud</p>
+          <div class="clearfix"></div>
+        </div>
+
+        <div class="x_content" style="padding: 25px;">
+
+          <form id="helpForm">
+
+            <!-- TÍTULO -->
+            <div class="form-group">
+              <label>Título</label>
+              <input type="text" id="title" class="form-control"
+                placeholder="Ej: Problema con una venta" required>
+            </div>
+
+            <!-- MENSAJE -->
+            <div class="form-group">
+              <label>Mensaje</label>
+              <textarea id="message" class="form-control" rows="5"
+                placeholder="Describe tu problema o solicitud..." required></textarea>
+            </div>
+
+            <!-- ALERTA -->
+            <div id="alertBox" style="display:none;" class="alert"></div>
+
+            <!-- BOTÓN -->
+            <div class="text-center" style="margin-top: 20px;">
+              <button type="submit" id="submitBtn" class="btn btn-primary">
+                <i class="fa fa-paper-plane"></i> Enviar solicitud
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ========================= -->
+<!-- JS MEJORADO -->
+<!-- ========================= -->
+
+<script>
+const form = document.getElementById('helpForm');
+const alertBox = document.getElementById('alertBox');
+const submitBtn = document.getElementById('submitBtn');
+
+form.addEventListener('submit', function(e) {
+  e.preventDefault();
+
+  const title = document.getElementById('title').value.trim();
+  const message = document.getElementById('message').value.trim();
+
+  // Validación simple
+  if (!title || !message) {
+    showAlert('Todos los campos son obligatorios', 'danger');
+    return;
+  }
+
+  // Estado loading
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Enviando...';
+
+  fetch('/api/help/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      title: title,
+      message: message
+    })
+  })
+  .then(res => {
+    if (!res.ok) {
+      return res.json().then(err => { throw err; });
+    }
+    return res.json();
+  })
+  .then(data => {
+    showAlert('Solicitud enviada correctamente ✅', 'success');
+    form.reset();
+  })
+  .catch(err => {
+    const msg = err.error || 'Error enviando la solicitud ❌';
+    showAlert(msg, 'danger');
+    console.error(err);
+  })
+  .finally(() => {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = '<i class="fa fa-paper-plane"></i> Enviar solicitud';
+  });
+
+});
+
+// 🔥 función reutilizable
+function showAlert(message, type) {
+  alertBox.style.display = 'block';
+  alertBox.className = 'alert alert-' + type;
+  alertBox.innerText = message;
+}
+</script>
+
+{% endblock %}

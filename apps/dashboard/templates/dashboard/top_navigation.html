@@ -11,10 +11,10 @@
           <span class=" fa fa-angle-down"></span>
         </a>
         <ul class="dropdown-menu dropdown-usermenu pull-right">
-          <li><a href="javascript:;"> Perfil</a></li>
+          <li><a href="{% url 'profile-page' %}"> Perfil</a></li>
           <li><a href="{% url 'admin:index' %}"> Panel administrativo</a></li>
           
-          <li><a href="javascript:;">Help</a></li>
+          <li><a href="{% url 'help_suport' %}">Help</a></li>
           <li>
   <form id="logoutForm" method="POST" action="{% url 'logout' %}">
     {% csrf_token %}

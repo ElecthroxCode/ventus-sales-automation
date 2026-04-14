@@ -84,7 +84,7 @@ class SaleDetailView(APIView):
 
     def get(self, request, pk):
         try:
-            sale = Sale.objects.prefetch_related('details').get(pk=pk)
+            sale = Sale.objects.prefetch_related('details').get(pk=pk) #trae evnta y detalles
         except Sale.DoesNotExist:
             return Response({"error": "Venta no encontrada"}, status=404)
 

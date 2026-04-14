@@ -7,6 +7,9 @@ from .views.dashboard_views import (
   customers_view, 
   customer_detail_view,
   reports_view,
+  help_view,
+  profile_view,
+
   
   )
 
@@ -18,7 +21,9 @@ urlpatterns =[
   path('sales/<int:pk>/', sales_detail_view, name='sales_detail'),
   path('customers/', customers_view, name='customers_list'),
   path('customers/<int:pk>/', customer_detail_view, name='customer_detail'),
-  path('reports-sales', reports_view, name='reports')
+  path('reports-sales', reports_view, name='reports'),
+  path('help-page', help_view, name='help_suport'),
+  path('profile', profile_view, name='profile-page'),
  
  
   

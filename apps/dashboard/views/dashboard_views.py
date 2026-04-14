@@ -158,3 +158,10 @@ def customer_detail_view(request, pk):
 def reports_view(request):
     return render(request, "dashboard/reports.html")
 
+#vista de pagina de soporte
+def help_view(request):
+    return render(request, "dashboard/help_page.html")
+
+#vista de perfil
+def profile_view(request):
+    return render(request, "dashboard/perfil.html")

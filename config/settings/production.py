@@ -12,7 +12,7 @@ ALLOWED_HOSTS = [
     os.getenv("RAILWAY_PRIVATE_DOMAIN", ""),
 ]
 
-# Strip empty strings that result from unset env vars
+
 ALLOWED_HOSTS = [h for h in ALLOWED_HOSTS if h]
 
 DATABASES = {
